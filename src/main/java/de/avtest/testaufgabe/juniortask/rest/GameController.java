@@ -198,10 +198,14 @@ public class GameController {
     // Once all the checks have passed, you can finally update the game board by calling
     // gameBoard.setSpace( x, y, GameMark.CIRCLE ).
     // [ The code to check if the space is free goes here ]
-
-    // If the space is not free, run the code in the line below by removing the //
-    //return ResponseEntity.status(HttpStatus.FORBIDDEN).body("This space has already been claimed!");
-
+    if (gameBoard.getSpace(x,y) != GameMark.NONE) {
+      // If the space is not free, run the code in the line below by removing the //
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("This space has already been claimed!");
+    }
+    else
+    {
+      gameBoard.setSpace(x,y,GameMark.CIRCLE);
+    }
     // [ The code to update the game board goes here ]
 
     // Saving the game board and output it to the player
