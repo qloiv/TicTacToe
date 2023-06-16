@@ -151,7 +151,7 @@ public class GameController {
     // Inside `player` you have the player which wants to play now.
     // If he is allowed to play, you have to return true, otherwise you have to return false.
 
-    return true;
+    return player != gameBoard.getLastPlayer();
   }
 
   /**
@@ -232,7 +232,7 @@ public class GameController {
 
     // Prevent the player from playing if it is not his turn
     if (!this.isAllowedToPlay(gameBoard, GamePlayer.ROBOT)) {
-      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to play. It is the bots turn!");
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("The bot is not allowed to play. Please make your move!");
     }
 
     var freeSpaces = new LinkedList<Map<String, Integer>>();
