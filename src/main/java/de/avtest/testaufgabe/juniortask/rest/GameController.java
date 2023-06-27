@@ -2,6 +2,8 @@ package de.avtest.testaufgabe.juniortask.rest;
 
 import de.avtest.testaufgabe.juniortask.data.GameBoard;
 import de.avtest.testaufgabe.juniortask.data.GameBoardSlice;
+import de.avtest.testaufgabe.juniortask.data.SaveGame;
+import de.avtest.testaufgabe.juniortask.data.SaveGameRepository;
 import de.avtest.testaufgabe.juniortask.data.enums.GameMark;
 import de.avtest.testaufgabe.juniortask.data.enums.GamePlayer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ public class GameController {
   private final Map<String, GameBoard> storedGames = new LinkedHashMap<>();
   private final Random random = new Random();
   @Autowired private CopyrightController copyrightController;
+  @Autowired private SaveGameRepository saveGameRepository;
 
   /**
    *
@@ -238,6 +241,40 @@ public class GameController {
     return this.statusOutput(gameBoard);
   }
 
+  @GetMapping(value = "saveGame", produces = "text/plain")
+  public ResponseEntity<String> saveGame(@RequestParam String gameId){
+    writeToDB(gameId,storedGames.get(gameId));
+    return ResponseEntity.ok("Saved " + gameId);
+  }
+
+  @GetMapping(value = "loadGame", produces = "text/plain")
+  public ResponseEntity<String> loadGame(@RequestParam String gameId){
+    loadFromDB(gameId);
+    return ResponseEntity.ok("Loaded " + gameId);
+  }
+
+  private void loadFromDB(String gameId) {
+    SaveGame game = saveGameRepository.findByUuid(gameId);
+    String board = game.getGameBoard();
+    String lastPlayer = game.getLastPlayer();
+    int size = game.getSize();
+    List<GameMark> gameBoard = stringToBoard(board);
+    GamePlayer lastPlayr = StringToLastPlayer(lastPlayer);
+    GameBoard gameBoard1 = new GameBoard(size, gameBoard,lastPlayr);
+    storedGames.put(gameId,gameBoard1);
+
+  }
+  public GamePlayer StringToLastPlayer(String lastPlayer){
+    return GamePlayer.valueOf(lastPlayer);
+  }
+  public List<GameMark> stringToBoard(String boardString) {
+    String[] gameMarkStrings = boardString.split(",", -1);
+    List<GameMark> gameMarks = new ArrayList<GameMark>();
+    for (String gameMark : gameMarkStrings) {
+      gameMarks.add(GameMark.valueOf(gameMark));
+    }
+    return gameMarks;
+  }
   @GetMapping(value = "create", produces = "text/plain")
   public ResponseEntity<String> create(@RequestParam(defaultValue = "3") int size) {
     // Loading the game board
@@ -249,5 +286,17 @@ public class GameController {
     var uuid = UUID.randomUUID().toString();
     storedGames.put(uuid, new GameBoard(size));
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(uuid + message);
+  }
+
+  private void writeToDB(String uuid, GameBoard gameBoard) {
+    String board = gameBoard.boardToString();
+    String lastPlayer = gameBoard.lastPlayerToString();
+    int size = gameBoard.getSize();
+    SaveGame saveGame = new SaveGame();
+    saveGame.setGameBoard(board);
+    saveGame.setSize(size);
+    saveGame.setUuid(uuid);
+    saveGame.setLastPlayer(lastPlayer);
+    saveGameRepository.save(saveGame);
   }
 }
