@@ -43,10 +43,10 @@ public class GameController {
     }
 
     return ResponseEntity.ok(copyrightController.getCopyright() +
-      System.lineSeparator() +
-      System.lineSeparator() +
-      gameBoard.draw() +
-      finalOutput
+            System.lineSeparator() +
+            System.lineSeparator() +
+            gameBoard.draw() +
+            finalOutput
     );
   }
 
@@ -65,54 +65,26 @@ public class GameController {
     // shorten this function without compromising its functionality. Note that by "shorten", we don't mean to just
     // remove spaces and line breaks ;)
     // =============================================================================================================
-    if ( // Check the first row
-      gameBoard.getRow(0).getSpace(0) == gameBoard.getRow(0).getSpace(1) &&
-        gameBoard.getRow(0).getSpace(0) == gameBoard.getRow(0).getSpace(2) &&
-        gameBoard.getRow(0).getSpace(0) != GameMark.NONE
-    ) return true;
-
-    if ( // Check the second row
-      gameBoard.getRow(1).getSpace(0) == gameBoard.getRow(1).getSpace(1) &&
-        gameBoard.getRow(1).getSpace(0) == gameBoard.getRow(1).getSpace(2) &&
-        gameBoard.getRow(1).getSpace(0) != GameMark.NONE
-    ) return true;
-
-    if ( // Check the third row
-      gameBoard.getRow(2).getSpace(0) == gameBoard.getRow(2).getSpace(1) &&
-        gameBoard.getRow(2).getSpace(0) == gameBoard.getRow(2).getSpace(2) &&
-        gameBoard.getRow(2).getSpace(0) != GameMark.NONE
-    ) return true;
-
-    if ( // Check the first column
-      gameBoard.getColumn(0).getSpace(0) == gameBoard.getColumn(0).getSpace(1) &&
-        gameBoard.getColumn(0).getSpace(0) == gameBoard.getColumn(0).getSpace(2) &&
-        gameBoard.getColumn(0).getSpace(0) != GameMark.NONE
-    ) return true;
-
-    if ( // Check the second column
-      gameBoard.getColumn(1).getSpace(0) == gameBoard.getColumn(1).getSpace(1) &&
-        gameBoard.getColumn(1).getSpace(0) == gameBoard.getColumn(1).getSpace(2) &&
-        gameBoard.getColumn(1).getSpace(0) != GameMark.NONE
-    ) return true;
-
-    if ( // Check the third column
-      gameBoard.getColumn(2).getSpace(0) == gameBoard.getColumn(2).getSpace(1) &&
-        gameBoard.getColumn(2).getSpace(0) == gameBoard.getColumn(2).getSpace(2) &&
-        gameBoard.getColumn(2).getSpace(0) != GameMark.NONE
-    ) return true;
-
-    if ( // Check the main diagonal
-      gameBoard.getMainDiagonal().getSpace(0) == gameBoard.getMainDiagonal().getSpace(1) &&
-        gameBoard.getMainDiagonal().getSpace(0) == gameBoard.getMainDiagonal().getSpace(2) &&
-        gameBoard.getMainDiagonal().getSpace(0) != GameMark.NONE
-    ) return true;
-
-    if ( // Check the anti-diagonal
-      gameBoard.getAntiDiagonal().getSpace(0) == gameBoard.getAntiDiagonal().getSpace(1) &&
-        gameBoard.getAntiDiagonal().getSpace(0) == gameBoard.getAntiDiagonal().getSpace(2) &&
-        gameBoard.getAntiDiagonal().getSpace(0) != GameMark.NONE
-    ) return true;
-
+    List<GameBoardSlice> boardSlices = gameBoard.getRows();
+    boardSlices.addAll(gameBoard.getColumns());
+    boardSlices.add(gameBoard.getMainDiagonal());
+    boardSlices.add(gameBoard.getAntiDiagonal());
+    for (GameBoardSlice boardSlice : boardSlices)
+    {
+      for(int i = 1; i<gameBoard.getSize();i++)
+      {
+        // If we encounter an empty field, this slice cannot be a winner slice
+        if(boardSlice.getSpace(i) ==GameMark.NONE)
+          break;
+        // if our current field is not the same as the one seen before, it is also not a winner slice
+        if(boardSlice.getSpace(i-1) != boardSlice.getSpace(i)) {
+          break;
+        }
+        // if we have seen all fields in the slice, and they are all the same and not empty, we have a winner
+        if(i == gameBoard.getSize()-1)
+          return true;
+      }
+    }
     return false;
   }
 
@@ -128,7 +100,8 @@ public class GameController {
     // This function needs to return null if nobody has won yet - you can use someoneHasWon( $game ) for this.
     // If someone has won, it needs to return either GamePlayer::Human or GamePlayer::Robot.
     // =============================================================================================================
-
+    if (someoneHasWon(gameBoard))
+      return gameBoard.getLastPlayer();
     return null;
   }
 
@@ -266,10 +239,15 @@ public class GameController {
   }
 
   @GetMapping(value = "create", produces = "text/plain")
-  public ResponseEntity<String> create() {
+  public ResponseEntity<String> create(@RequestParam(defaultValue = "3") int size) {
     // Loading the game board
+    String message = "";
+    if(size > 5) {
+      size = 3;
+      message = " The board size was set to 3, because it was too high.";
+    }
     var uuid = UUID.randomUUID().toString();
-    storedGames.put(uuid, new GameBoard());
-    return ResponseEntity.ok(uuid);
+    storedGames.put(uuid, new GameBoard(size));
+    return ResponseEntity.status(HttpStatus.ACCEPTED).body(uuid + message);
   }
 }

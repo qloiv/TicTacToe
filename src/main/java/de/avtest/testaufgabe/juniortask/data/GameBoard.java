@@ -4,21 +4,24 @@ import de.avtest.testaufgabe.juniortask.data.enums.GameBoardSliceType;
 import de.avtest.testaufgabe.juniortask.data.enums.GameMark;
 import de.avtest.testaufgabe.juniortask.data.enums.GamePlayer;
 
+import javax.persistence.Entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+
 public class GameBoard {
 
   // Board size
-  private final int size = 3;
+  private int size = 4;
 
   // Board data storage
   private List<GameMark> board;
 
   private GamePlayer lastPlayer;
 
-  public GameBoard() {
+  public GameBoard(int size) {
+    setSize(size);
     this.clear();
   }
 
@@ -180,5 +183,8 @@ public class GameBoard {
 
   public int getSize() {
     return size;
+  }
+  private void setSize(int size) {
+    this.size = size;
   }
 }
