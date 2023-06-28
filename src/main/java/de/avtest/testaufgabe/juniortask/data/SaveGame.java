@@ -17,6 +17,13 @@ public class SaveGame {
     public SaveGame() {
     }
 
+    public SaveGame(String uuid, int size, String lastPlayer, String gameBoard) {
+        this.uuid = uuid;
+        this.size = size;
+        this.lastPlayer = lastPlayer;
+        this.gameBoard = gameBoard;
+    }
+
     public String getUuid() {
         return uuid;
     }

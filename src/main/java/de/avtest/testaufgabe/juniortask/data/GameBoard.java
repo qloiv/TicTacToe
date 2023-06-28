@@ -16,7 +16,6 @@ public class GameBoard {
 
     // Board data storage
     private List<GameMark> board;
-
     private GamePlayer lastPlayer;
 
     public GameBoard(int size) {
@@ -30,6 +29,21 @@ public class GameBoard {
         this.lastPlayer = lastPlayer;
     }
 
+    public List<GameMark> getBoard() {
+        return board;
+    }
+
+    public GamePlayer getLastPlayer() {
+        return lastPlayer;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    private void setSize(int size) {
+        this.size = size;
+    }
     /**
      * Checks position validity and throws an exception in case of an invalid position
      *
@@ -42,18 +56,7 @@ public class GameBoard {
         if (y < 0 || y >= size) throw new RuntimeException(String.format("Invalid Y position: %s", x));
     }
 
-    public String boardToString() {
-        StringBuilder boardString = new StringBuilder();
-        for (GameMark gameMark : this.board) {
-            boardString.append(gameMark.toString()).append(",");
-        }
-        boardString.deleteCharAt(boardString.length() - 1);
-        return boardString.toString();
-    }
 
-    public String lastPlayerToString() {
-        return this.lastPlayer.toString();
-    }
 
     /**
      * Returns the content of a given space
@@ -156,7 +159,7 @@ public class GameBoard {
         IntStream.range(0, size * size).forEach(value -> this.board.add(GameMark.NONE));
 
         // Reset last player
-        this.lastPlayer = null;
+        this.lastPlayer = GamePlayer.NONE;
     }
 
     /**
@@ -205,15 +208,4 @@ public class GameBoard {
         return gameBoardString.toString();
     }
 
-    public GamePlayer getLastPlayer() {
-        return lastPlayer;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    private void setSize(int size) {
-        this.size = size;
-    }
 }
