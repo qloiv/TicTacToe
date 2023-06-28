@@ -18,9 +18,10 @@ public class SaveGameController {
     }
 
     public void writeToDB(String uuid, GameBoard gameBoard) {
-        SaveGame saveGame = transformToEntity(uuid, gameBoard);
+        SaveGame saveGame = transformToSaveGame(uuid, gameBoard);
         saveGameRepository.save(saveGame);
     }
+
     public GameBoard loadFromDB(String gameId) {
         SaveGame game = saveGameRepository.findByUuid(gameId);
         if (game != null) {
@@ -30,35 +31,37 @@ public class SaveGameController {
         }
     }
 
-    private SaveGame transformToEntity(String uuid, GameBoard gameBoard) {
+    private SaveGame transformToSaveGame(String uuid, GameBoard gameBoard) {
         String board = boardToString(gameBoard);
         String lastPlayer = lastPlayerToString(gameBoard);
         int size = gameBoard.getSize();
-        return new SaveGame(uuid,size,lastPlayer,board);
+        return new SaveGame(uuid, size, lastPlayer, board);
     }
 
 
-
-    private GameBoard transformToGameBoard(SaveGame game) {
-        String board = game.getGameBoard();
-        String lastPlayer = game.getLastPlayer();
-        int size = game.getSize();
+    private GameBoard transformToGameBoard(SaveGame saveGame) {
+        String board = saveGame.getGameBoard();
+        String lastPlayer = saveGame.getLastPlayer();
+        int size = saveGame.getSize();
         List<GameMark> gameBoard = stringToBoard(board);
-        GamePlayer lastPlayr = stringToLastPlayer(lastPlayer);
-        return new GameBoard(size, gameBoard, lastPlayr);
+        GamePlayer gamePlayer = stringToLastPlayer(lastPlayer);
+        return new GameBoard(size, gameBoard, gamePlayer);
     }
 
-    private GamePlayer stringToLastPlayer(String lastPlayer){
+    private GamePlayer stringToLastPlayer(String lastPlayer) {
         return GamePlayer.valueOf(lastPlayer);
     }
-    public String lastPlayerToString(GameBoard board) {
+
+    private String lastPlayerToString(GameBoard board) {
         return board.getLastPlayer().toString();
     }
+
     private List<GameMark> stringToBoard(String boardString) {
         return Arrays.stream(boardString.split(",", -1))
                 .map(GameMark::valueOf)
                 .collect(Collectors.toList());
     }
+
     private String boardToString(GameBoard board) {
         return board.getBoard().stream()
                 .map(GameMark::toString)
@@ -66,7 +69,7 @@ public class SaveGameController {
 
     }
 
-    public Map<String,GameBoard> loadAllFromDB() {
+    public Map<String, GameBoard> loadAllFromDB() {
         Iterable<SaveGame> saveGames = saveGameRepository.findAll();
         Map<String, GameBoard> map = new LinkedHashMap<>();
         for (SaveGame saveGame : saveGames) {
@@ -81,9 +84,13 @@ public class SaveGameController {
 
     public void writeAllToDB(Set<Map.Entry<String, GameBoard>> entries) {
         List<SaveGame> saveGames = entries.stream()
-                .map(entry -> transformToEntity(entry.getKey(), entry.getValue()))
+                .map(entry -> transformToSaveGame(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
 
         saveGameRepository.saveAll(saveGames);
+    }
+
+    public void deleteAllSaveGames() {
+        saveGameRepository.deleteAll();
     }
 }

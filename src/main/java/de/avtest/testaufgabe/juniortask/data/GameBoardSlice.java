@@ -37,8 +37,8 @@ public class GameBoardSlice {
 
   /**
    * Gets the content of a given space
-   * @param p
-   * @return
+   * @param p position in the slice
+   * @return game mark at this position
    */
   public GameMark getSpace(int p) {
     return switch (this.type) {
@@ -51,8 +51,8 @@ public class GameBoardSlice {
 
   /**
    * Sets the content of a given space
-   * @param p
-   * @param gameMark
+   * @param p position in this slice
+   * @param gameMark game mark to be set
    */
   public void setSpace(int p, GameMark gameMark) {
     switch (this.type) {
@@ -65,7 +65,7 @@ public class GameBoardSlice {
 
   /**
    * Get all spaces belonging to one row inside an array.
-   * @return
+   * @return all spaces inside a row
    */
   public List<GameMark> getSpaces() {
     return IntStream.range(0, this.size).mapToObj(this::getSpace).toList();

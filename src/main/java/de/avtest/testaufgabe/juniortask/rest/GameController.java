@@ -27,8 +27,8 @@ public class GameController {
     private SaveGameController saveGameController;
 
     /**
-     * @param gameBoard
-     * @return
+     * @param gameBoard the current game board
+     * @return response displaying the game board
      */
     protected ResponseEntity<String> statusOutput(GameBoard gameBoard) {
         var winner = this.whoHasWon(gameBoard);
@@ -54,8 +54,8 @@ public class GameController {
     }
 
     /**
-     * @param gameBoard
-     * @return
+     * @param gameBoard current game board
+     * @return true if someone has won, false if not
      */
     protected boolean someoneHasWon(GameBoard gameBoard) {
         // ##### TASK 7 - Make this check more efficient ###############################################################
@@ -89,8 +89,8 @@ public class GameController {
     }
 
     /**
-     * @param gameBoard
-     * @return
+     * @param gameBoard current game board
+     * @return the last player (which has won)
      */
     protected GamePlayer whoHasWon(GameBoard gameBoard) {
         // ##### TASK 8 - Check who has won ############################################################################
@@ -107,9 +107,9 @@ public class GameController {
     /**
      * Is the given player allowed to take the next turn?
      *
-     * @param gameBoard
-     * @param player
-     * @return
+     * @param gameBoard the current game board
+     * @param player the player wishing to play
+     * @return whether the player is allowed to play
      */
     protected boolean isAllowedToPlay(GameBoard gameBoard, GamePlayer player) {
         // ##### TASK 6 - No cheating! #################################################################################
@@ -131,7 +131,7 @@ public class GameController {
      * @param gameId The ID of the game
      * @param x      The x position entered by the player
      * @param y      The y position entered by the player
-     * @return
+     * @return a response indicating whether the planned move was successful
      */
     @GetMapping(value = "play", produces = "text/plain")
     public ResponseEntity<String> play(@RequestParam String gameId, @RequestParam int x, @RequestParam int y) {
@@ -239,6 +239,12 @@ public class GameController {
     public ResponseEntity<String> saveGame(@RequestParam String gameId) {
         saveGameController.writeToDB(gameId, storedGames.get(gameId));
         return ResponseEntity.ok("Saved " + gameId);
+    }
+
+    @GetMapping(value = "deleteSaveGames", produces = "text/plain")
+    public ResponseEntity<String> deleteSaveGames() {
+        saveGameController.deleteAllSaveGames();
+        return ResponseEntity.ok("Deleted all game saves");
     }
 
     @GetMapping(value = "loadGame", produces = "text/plain")

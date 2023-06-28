@@ -44,6 +44,7 @@ public class GameBoard {
     private void setSize(int size) {
         this.size = size;
     }
+
     /**
      * Checks position validity and throws an exception in case of an invalid position
      *
@@ -57,13 +58,12 @@ public class GameBoard {
     }
 
 
-
     /**
      * Returns the content of a given space
      *
      * @param x X position
      * @param y Y position
-     * @return
+     * @return the game mark at this position
      */
     public GameMark getSpace(int x, int y) {
         this.validatePosition(x, y);
@@ -73,9 +73,9 @@ public class GameBoard {
     /**
      * Sets the content of a given space
      *
-     * @param x
-     * @param y
-     * @param gameMark
+     * @param x X position
+     * @param y Y position
+     * @param gameMark game marker to set
      */
     public void setSpace(int x, int y, GameMark gameMark) {
         this.validatePosition(x, y);
@@ -87,8 +87,8 @@ public class GameBoard {
     /**
      * Returns an entire row
      *
-     * @param row
-     * @return
+     * @param row position of the row
+     * @return the chosen row, sliced
      */
     public GameBoardSlice getRow(int row) {
         return new GameBoardSlice(this, GameBoardSliceType.ROW, this.size, row);
@@ -97,8 +97,7 @@ public class GameBoard {
     /**
      * Return all rows
      *
-     * @return
-     * @throws Exception
+     * @return all rows of the board
      */
     public List<GameBoardSlice> getRows() {
         var temp = new ArrayList<GameBoardSlice>(this.size);
@@ -109,20 +108,19 @@ public class GameBoard {
     }
 
     /**
-     * Returns an entire row
+     * Returns an entire column
      *
-     * @param row
-     * @return
+     * @param column position of the column
+     * @return the requested column, sliced
      */
-    public GameBoardSlice getColumn(int row) {
-        return new GameBoardSlice(this, GameBoardSliceType.COLUMN, this.size, row);
+    public GameBoardSlice getColumn(int column) {
+        return new GameBoardSlice(this, GameBoardSliceType.COLUMN, this.size, column);
     }
 
     /**
      * Return all columns
      *
-     * @return
-     * @throws Exception
+     * @return all columns of the board
      */
     public List<GameBoardSlice> getColumns() {
         var temp = new ArrayList<GameBoardSlice>(this.size);
@@ -135,7 +133,7 @@ public class GameBoard {
     /**
      * Returns the main diagonal
      *
-     * @return
+     * @return the main diagonal
      */
     public GameBoardSlice getMainDiagonal() {
         return new GameBoardSlice(this, GameBoardSliceType.MAIN_DIAGONAL, this.size);
@@ -144,7 +142,7 @@ public class GameBoard {
     /**
      * Returns the anti diagonal
      *
-     * @return
+     * @return the anti diagonal
      */
     public GameBoardSlice getAntiDiagonal() {
         return new GameBoardSlice(this, GameBoardSliceType.ANTI_DIAGONAL, this.size);
