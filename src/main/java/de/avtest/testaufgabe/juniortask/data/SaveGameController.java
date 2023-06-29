@@ -22,12 +22,12 @@ public class SaveGameController {
         saveGameRepository.save(saveGame);
     }
 
-    public GameBoard loadFromDB(String gameId) {
+    public GameBoard readFromDB(String gameId) {
         SaveGame game = saveGameRepository.findByUuid(gameId);
         if (game != null) {
             return transformToGameBoard(game);
         } else {
-            return new GameBoard(3); // return a standard game board
+            return null;
         }
     }
 

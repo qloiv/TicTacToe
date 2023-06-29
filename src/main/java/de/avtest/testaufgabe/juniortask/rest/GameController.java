@@ -249,7 +249,10 @@ public class GameController {
 
     @GetMapping(value = "loadGame", produces = "text/plain")
     public ResponseEntity<String> loadGame(@RequestParam String gameId) {
-        GameBoard board = saveGameController.loadFromDB(gameId);
+        GameBoard board = saveGameController.readFromDB(gameId);
+        if(board == null) {
+            return ResponseEntity.ok("No game found.");
+        }
         storedGames.put(gameId, board);
         return ResponseEntity.ok("Loaded " + gameId);
     }
