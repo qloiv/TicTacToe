@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 @RestController
@@ -25,6 +26,11 @@ public class GameController {
     private CopyrightController copyrightController;
     @Autowired
     private SaveGameController saveGameController;
+    @PostConstruct
+    public void initializeStoredGames() {
+        Map<String, GameBoard> loadedGames = saveGameController.loadAllFromDB();
+        storedGames.putAll(loadedGames);
+    }
 
     /**
      * @param gameBoard the current game board
@@ -37,8 +43,8 @@ public class GameController {
             finalOutput = System.lineSeparator() + "Someone won the game";
         } else if (this.someoneHasWon(gameBoard) && winner.equals(GamePlayer.HUMAN)) {
             finalOutput = System.lineSeparator() + "You won the game! Congratulations!";
-        } else if (this.someoneHasWon(gameBoard) && winner.equals(GamePlayer.HUMAN)) {
-            finalOutput = System.lineSeparator() + "The won the game...";
+        } else if (this.someoneHasWon(gameBoard) && winner.equals(GamePlayer.ROBOT)) {
+            finalOutput = System.lineSeparator() + "The bot won the game...";
         } else if (!gameBoard.spaceIsLeft()) {
             finalOutput = System.lineSeparator() + "It's a draw";
         } else {
@@ -175,6 +181,7 @@ public class GameController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("This space has already been claimed!");
         } else {
             gameBoard.setSpace(x, y, GameMark.CIRCLE);
+            saveGameController.writeToDB(gameId,gameBoard);
         }
         // [ The code to update the game board goes here ]
 
@@ -224,6 +231,7 @@ public class GameController {
         var randomFreeSpace = freeSpaces.stream().skip(random.nextInt(freeSpaces.size())).findFirst().orElseGet(() -> freeSpaces.get(0));
 
         gameBoard.setSpace(randomFreeSpace.get("x"), randomFreeSpace.get("y"), GameMark.CROSS);
+        saveGameController.writeToDB(gameId,gameBoard);
 
         return this.statusOutput(gameBoard);
     }
@@ -235,43 +243,19 @@ public class GameController {
         return this.statusOutput(gameBoard);
     }
 
-    @GetMapping(value = "saveGame", produces = "text/plain")
-    public ResponseEntity<String> saveGame(@RequestParam String gameId) {
-        if (storedGames.get(gameId) == null) {
-            return ResponseEntity.unprocessableEntity().body("No game with this game id");
-        }
-        saveGameController.writeToDB(gameId, storedGames.get(gameId));
-        return ResponseEntity.ok("Saved " + gameId);
-    }
 
-    @GetMapping(value = "deleteSaveGames", produces = "text/plain")
-    public ResponseEntity<String> deleteSaveGames() {
+    @GetMapping(value = "deleteAllSaves", produces = "text/plain")
+    public ResponseEntity<String> deleteAllSaves() {
         saveGameController.deleteAllSaveGames();
+        storedGames.clear();
         return ResponseEntity.ok("Deleted all game saves");
     }
 
-    @GetMapping(value = "loadGame", produces = "text/plain")
-    public ResponseEntity<String> loadGame(@RequestParam String gameId) {
-        GameBoard board = saveGameController.readFromDB(gameId);
-        if (board == null) {
-            return ResponseEntity.notFound().build();
-        }
-        storedGames.put(gameId, board);
-        return ResponseEntity.ok("Loaded " + gameId);
-    }
-
-    @GetMapping(value = "saveAllGames", produces = "text/plain")
-    public ResponseEntity<String> saveAllGames() {
-        saveGameController.writeAllToDB(storedGames.entrySet());
-        return ResponseEntity.ok("Saved " + storedGames.keySet());
-    }
 
 
-    @GetMapping(value = "loadAllGames", produces = "text/plain")
+    @GetMapping(value = "getAllGameIDs", produces = "text/plain")
     public ResponseEntity<String> loadAllGames() {
-        Map<String, GameBoard> loadedGames = saveGameController.loadAllFromDB();
-        storedGames.putAll(saveGameController.loadAllFromDB());
-        return ResponseEntity.ok("Loaded " + loadedGames.keySet());
+        return ResponseEntity.ok("Current game IDs " + storedGames.keySet());
     }
 
     @GetMapping(value = "create", produces = "text/plain")
