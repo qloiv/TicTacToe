@@ -108,7 +108,7 @@ public class GameController {
      * Is the given player allowed to take the next turn?
      *
      * @param gameBoard the current game board
-     * @param player the player wishing to play
+     * @param player    the player wishing to play
      * @return whether the player is allowed to play
      */
     protected boolean isAllowedToPlay(GameBoard gameBoard, GamePlayer player) {
@@ -237,6 +237,9 @@ public class GameController {
 
     @GetMapping(value = "saveGame", produces = "text/plain")
     public ResponseEntity<String> saveGame(@RequestParam String gameId) {
+        if (storedGames.get(gameId) == null) {
+            return ResponseEntity.unprocessableEntity().body("No game with this game id");
+        }
         saveGameController.writeToDB(gameId, storedGames.get(gameId));
         return ResponseEntity.ok("Saved " + gameId);
     }
@@ -250,8 +253,8 @@ public class GameController {
     @GetMapping(value = "loadGame", produces = "text/plain")
     public ResponseEntity<String> loadGame(@RequestParam String gameId) {
         GameBoard board = saveGameController.readFromDB(gameId);
-        if(board == null) {
-            return ResponseEntity.ok("No game found.");
+        if (board == null) {
+            return ResponseEntity.notFound().build();
         }
         storedGames.put(gameId, board);
         return ResponseEntity.ok("Loaded " + gameId);
@@ -266,8 +269,9 @@ public class GameController {
 
     @GetMapping(value = "loadAllGames", produces = "text/plain")
     public ResponseEntity<String> loadAllGames() {
+        Map<String, GameBoard> loadedGames = saveGameController.loadAllFromDB();
         storedGames.putAll(saveGameController.loadAllFromDB());
-        return ResponseEntity.ok("Loaded " + storedGames.keySet());
+        return ResponseEntity.ok("Loaded " + loadedGames.keySet());
     }
 
     @GetMapping(value = "create", produces = "text/plain")
